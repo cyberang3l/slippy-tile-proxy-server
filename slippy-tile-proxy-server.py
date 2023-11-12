@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import concurrent.futures
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import mercantile
 from random import randint
 from typing import Dict, List, Union
@@ -241,7 +241,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    webServer = HTTPServer(
+    webServer = ThreadingHTTPServer(
         (hostName, serverPort), HttpRequestHandler)
     print("Tile proxy started http://%s:%s" % (hostName, serverPort))
 
