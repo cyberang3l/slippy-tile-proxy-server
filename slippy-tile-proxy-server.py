@@ -65,14 +65,16 @@ def dynGetTileUrl(z, x, y):
         "bbox": "{},{},{},{}".format(bbox.west, bbox.south, bbox.east, bbox.north),
         "bboxSR": 4326, # WGS 84: https://developers.arcgis.com/rest/services-reference/enterprise/export-image.htm
         "imageSR": 3857, # Web Mercator (3857): https://developers.arcgis.com/rest/services-reference/enterprise/export-image.htm
-        "size": "256,256",
+        "size": "128,128",
         "f": "image",
     }
     return url + urllib.parse.urlencode(params)
         """],
             "filetype": "png",
-            "tile_width": 256,
-            "tile_height": 256,
+            "tile_width": 128,
+            "tile_height": 128,
+            "min_zoom": 2,
+            "max_zoom": 15,
             "uses": [urllib, mercantile],
         }
     ],
@@ -86,6 +88,30 @@ def dynGetTileUrl(z, x, y):
             "filetype": "jpg",
             "tile_width": 512,
             "tile_height": 512,
+        },
+        {
+            "tile_servers": [
+                "nwy-tiles-api.prod.newaydata.com",
+            ],
+            "protocol": "https",
+            "url": "tiles/{z}/{x}/{y}.png?path=latest/aero/latest",
+            "filetype": "png",
+            "tile_width": 512,
+            "tile_height": 512,
+        },
+    ],
+    "openflighttopo": [
+        {
+            "tile_servers": [
+                "a.tile.opentopomap.org",
+                "b.tile.opentopomap.org",
+                "c.tile.opentopomap.org",
+            ],
+            "protocol": "https",
+            "url": "{z}/{x}/{y}.png",
+            "filetype": "png",
+            "tile_width": 256,
+            "tile_height": 256,
         },
         {
             "tile_servers": [
@@ -129,13 +155,13 @@ def get_tile_urls(incoming_url: str) -> List[str]:
     # Always expect a url in the form of /map_identifier/z/x/y
     data = incoming_url.rstrip('/').lstrip('/').split('/')
     if len(data) < 4:
-        print("Error: expecting GET request in the form 'map_config/z/x/y'")
-        return
+        raise ValueError(
+            "Error: expecting GET request in the form 'map_config/z/x/y'")
 
     map_conf = MAINCONFIG.get(data[0])
     if map_conf is None:
-        print(f"Error: no map '{data[0]}' found in the tile proxy conf")
-        return
+        raise IndexError(
+            f"Error: no map '{data[0]}' found in the tile proxy conf")
 
     z = int(data[1])
     x = int(data[2])
@@ -155,13 +181,13 @@ def get_image_filetype(incoming_url: str) -> str:
     # build_composite_image function that always returns a png
     data = incoming_url.rstrip('/').lstrip('/').split('/')
     if len(data) < 4:
-        print("Error: expecting GET request in the form 'map_config/z/x/y'")
-        return
+        raise ValueError(
+            "Error: expecting GET request in the form 'map_config/z/x/y'")
 
     map_conf = MAINCONFIG.get(data[0])
     if map_conf is None:
-        print(f"Error: no map '{data[0]}' found in the tile proxy conf")
-        return
+        raise IndexError(
+            f"Error: no map '{data[0]}' found in the tile proxy conf")
 
     if len(map_conf) == 1:
         return map_conf[0]["filetype"]
@@ -208,6 +234,17 @@ def build_composite_image(img_base: bytes, img_overlay: bytes) -> bytes:
     # generated PNG image as a blob
     base = Image(blob=img_base)
     overlay = Image(blob=img_overlay)
+
+    b_w, b_h = base.size
+    o_w, o_h = overlay.size
+
+    # Resize base or overlay to the width/height of the smallest layer
+    if b_w != o_w:
+        if b_w > o_w:
+            base.resize(o_w, o_h)
+        else:
+            overlay.resize(b_w, b_h)
+
     base.composite(overlay)
     return base.make_blob("PNG")
 
