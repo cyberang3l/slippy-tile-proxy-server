@@ -17,6 +17,28 @@ from wand.image import Image
 _POSIX_PROG_NAME = "slippy-tile-proxy"
 
 
+class bcolors:
+    PURPLE = '\033[95m'
+    BLUE = '\033[94m'
+    WHITE = '\033[97m'
+    CYAN = '\033[96m'
+    GREEN = '\033[92m'
+    BROWN = '\033[33m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
+def pstderr(*args):
+    print(*args, file=sys.stderr)
+
+
+def printColor(*args, color: bcolors = bcolors.ENDC):
+    pstderr(color, *args, bcolors.ENDC)
+
+
 def buildCompositeImage(base: Image, overlay: Image) -> Image:
     # Compose a base image and an overlay, and return the
     # generated PNG image
@@ -98,7 +120,9 @@ class BaseDownloadProvider(ABC):
         try:
             lastModTime = os.path.getmtime(path)
             if time.time() - lastModTime > tileServerConf.tileCacheTimeoutSec:
-                print(f"Cache expired for layer {path}", file=sys.stderr)
+                printColor(
+                    f"Cache expired for layer {path}",
+                    color=bcolors.YELLOW)
                 return None, None
         except FileNotFoundError:
             return None, None
@@ -208,14 +232,14 @@ class MultithreadedDownloadProvider(BaseDownloadProvider):
                 try:
                     data = future.result()
                 except Exception as exc:
-                    print(
+                    printColor(
                         f"{url} generated an exception: {exc}",
-                        file=sys.stderr)
+                        color=bcolors.RED)
                     return {}
                 else:
-                    print(
+                    printColor(
                         f"Downloaded {url} - {len(data)} bytes",
-                        file=sys.stderr)
+                        color=bcolors.CYAN)
                     images[urlIdx] = {"url": url, "image": Image(blob=data)}
         return images
 
@@ -242,9 +266,9 @@ class MultithreadedDownloadProvider(BaseDownloadProvider):
                 z, x, y, mapId, tileConf, tileServerConf)
             if layer is None:
                 continue
-            print(
-                f"Loading tile layer from cache: {cachePath}",
-                file=sys.stderr)
+            printColor(
+                f"Loaded tile layer from cache: {cachePath}",
+                color=bcolors.GREEN)
             cachedLayers[layerIdx] = {
                 "url": cachePath, "image": layer}
 
@@ -292,7 +316,7 @@ class BaseTileSetConfig(NamedTuple):
 
 
 class MainConfig(dict):
-    @ overload
+    @overload
     def __getitem__(self, name: str) -> BaseTileSetConfig:
         ...
 

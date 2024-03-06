@@ -14,7 +14,8 @@ from wand.exceptions import OptionError
 from wand.image import Image
 
 from providers import (BaseDownloadProvider, BaseTileServerConfig,
-                       BaseTileSetConfig, buildCompositeImage)
+                       BaseTileSetConfig, bcolors, buildCompositeImage,
+                       printColor)
 
 _downloadLock = Lock()
 _cacheLock = Lock()
@@ -117,7 +118,9 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
 
     def _downloadSingleTileLayer(self, url: str) -> Image:
         def downloadSingleTileLayer(url: str):
-            print(f"Downloading tile layer from url: {url}", file=sys.stderr)
+            printColor(
+                f"Downloading tile layer from url: {url}",
+                color=bcolors.BLUE)
             with urllib.request.urlopen(url, timeout=self._downloadTimeoutSec) as conn:
                 return conn.read()
 
@@ -141,19 +144,18 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
                 # This error checking chunk is specific to the geonorge WMS server
                 # that throttles requests aggressively, but returns a 200
                 # response.
-                print("Error occured:", e, file=sys.stderr)
+                printColor("Error occured:", e, color=bcolors.RED)
                 msg = data.decode('ISO-8859-1')
                 if "Overforbruk" in msg:
-                    print(
+                    printColor(
                         "Overuse error - Sleeping 1 second and retrying",
-                        file=sys.stderr)
+                        color=bcolors.BROWN)
                     time.sleep(1)
                     continue
                 else:
-                    print(
+                    printColor(
                         "Success but not valid image returned - will not retry this one",
-                        file=sys.stderr)
-                print(e, type(e).__name__, e.args, file=sys.stderr)
+                        color=bcolors.BOLD + bcolors.YELLOW)
 
     def _getLayerFromGeonorge(
             self,
@@ -166,9 +168,9 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
             cachedImage, cachePath = self.getTileLayerFromCache(
                 z, x, y, mapId, tileConf, tileServerConf)
             if cachedImage:
-                print(
+                printColor(
                     f"Loading tile layer from cache: {cachePath}",
-                    file=sys.stderr)
+                    color=bcolors.WHITE)
                 return cachedImage
 
             dataset = tileServerConf.customConfig.wmsDataset
@@ -268,9 +270,9 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
         try:
             lastModTime = os.path.getmtime(path)
             if time.time() - lastModTime > minTileCacheTimeoutSec:
-                print(
+                printColor(
                     f"Cache expired for composite tile {path}",
-                    file=sys.stderr)
+                    color=bcolors.YELLOW)
                 return None, None
         except FileNotFoundError:
             return None, None
@@ -282,11 +284,12 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
             pass
         return None, None
 
-    def _chopLargeCompositeAndCacheIt(
+    def _cropLargeCompositeAndCacheIt(
             self, image: Image, sizePx: int,
             z: int, xReq: int, yReq: int,
-            topLeftX: int, topLeftY: int, gridSize: int,
             mapId: str, tileConf: 'BaseTileSetConfig') -> Image:
+        topLeftX, topLeftY, _, _, _, _, gridSize = self._getXYWH(
+            z, xReq, yReq, sizePx)
         retTile = None
         for xi in range(gridSize):
             for yi in range(gridSize):
@@ -294,7 +297,7 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
                 y = yi + topLeftY
                 cachePath = self._getTileCompositeCachePath(
                     z, x, y, mapId, tileConf)
-                print(f"chopping and caching {cachePath}", file=sys.stderr)
+                print(f"Cropping and caching {cachePath}", file=sys.stderr)
                 left = xi * sizePx
                 right = left + sizePx
                 top = yi * sizePx
@@ -312,7 +315,9 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
         tile, tileCachePath = self._getTileCompositeFromCache(
             z, x, y, mapId, tileConf)
         if tile:
-            print(f"Tile fetched from cache: {tileCachePath}", file=sys.stderr)
+            printColor(
+                f"Tile fetched from cache: {tileCachePath}",
+                color=bcolors.GREEN)
             return tile
 
         sizePx = 0
@@ -335,8 +340,8 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
                 z, x, y, mapId, tileConf, tileServerConf)
             downloadedLayers.append(layer)
 
-        tile = self._makeCompositeFromLayers(downloadedLayers)
+        compositeTile = self._makeCompositeFromLayers(downloadedLayers)
 
-        tlx, tly, _, _, _, _, gridSize = self._getXYWH(z, x, y, sizePx)
-        return self._chopLargeCompositeAndCacheIt(
-            tile, sizePx, z, x, y, tlx, tly, gridSize, mapId, tileConf)
+        tile = self._cropLargeCompositeAndCacheIt(
+            compositeTile, sizePx, z, x, y, mapId, tileConf)
+        return tile

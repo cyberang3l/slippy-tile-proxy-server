@@ -26,19 +26,21 @@ understand, fetch the tile, and serve it back to the program that only
 has slippy tile map support.
 
 As I mentioned above, I don't understand much about TMS/WMTS servers,
-but the python mercantile package can make such convertions look simple.
+but the python mercantile and pyproj packages can make such conversions
+look simple.
 
-See the sample `norway_vfr` map in the `MAINCONFIG` configuration, to
-see how you can use this feature. In the `MAINCONFIG` you can also
+See the sample `norway_vfr` map in the `mainConf` configuration, to
+see how you can use this feature. In the `mainConf` you can also
 look at the sample `openflightmaps` configuration that uses a base and
 an overlay to serve a merged composite tile.
 
 # Usage
 
-1. Edit the `MAINCONFIG` dictionary in the `slippy-tile-proxy-server.py`
+1. Edit the `mainConf` dictionary in the `slippy-tile-proxy-server.py`
    file and add the map configuration that you would like the tile proxy
    server to serve (read the comments and have a look at the sample
-   configurations to understand how to add your configuration).
+   configurations that are included to understand how to add your
+   configuration).
 2. Save the script.
 3. Run the script in a console: `python3 slippy-tile-proxy-server.py`
 4. Make HTTP GET requests from your browser, or point any other program

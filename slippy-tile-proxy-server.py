@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 
-import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Tuple
 
 from geonorge_provider import (GeonorgeCustomConfig, GeonorgeDatasetID,
                                GeonorgeWMSDownloadProvider)
 from providers import (BaseTileServerConfig, BaseTileSetConfig, ImageFileType,
-                       MainConfig)
+                       MainConfig, bcolors, printColor)
 
 # A brief explanation of the map configuration format of the tile proxy
 # server follows.
@@ -345,7 +344,9 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
         return z, x, y, mapId, mapConf
 
     def do_GET(self):
-        print(" - Serving Incoming request " + self.path, file=sys.stderr)
+        printColor(
+            f" - Serving Incoming request {bcolors.BOLD}{self.path}",
+            color=bcolors.PURPLE)
         if self.path == "/favicon.ico":
             self.wfile.write(b'')
             return
@@ -364,25 +365,30 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", f"image/{image_type}")
             self.end_headers()
+            printColor(
+                f" - Serving tile {self.path}",
+                color=bcolors.BOLD + bcolors.BLUE)
             self.wfile.write(image_blob)
         except BrokenPipeError:
-            print("Broken pipe - won't respond to the client", file=sys.stderr)
+            printColor(
+                "Broken pipe - won't respond to the client",
+                color=bcolors.RED)
         except BaseException as e:
-            print("Error occured:", e, file=sys.stderr)
+            printColor("Error occured:", e, color=bcolors.RED)
             self.send_error(408)
 
 
 if __name__ == "__main__":
     webServer = ThreadingHTTPServer(
         (hostName, serverPort), HttpRequestHandler)
-    print(
+    printColor(
         f"Tile proxy started http://{hostName}:{serverPort}",
-        file=sys.stderr)
-    print("Serving layers:", file=sys.stderr)
+        color=bcolors.WHITE)
+    printColor("Serving layers:", color=bcolors.WHITE)
     for map_key in mainConf.keys():
-        print(
+        printColor(
             f"* http://{hostName}:{serverPort}/{map_key}/z/x/y",
-            file=sys.stderr)
+            color=bcolors.WHITE)
 
     try:
         webServer.serve_forever()
@@ -391,4 +397,4 @@ if __name__ == "__main__":
 
     webServer.server_close()
 
-    print("Server stopped.", file=sys.stderr)
+    printColor("Server stopped.", color=bcolors.WHITE)
