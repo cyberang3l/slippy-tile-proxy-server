@@ -69,7 +69,7 @@ class BaseTileServerConfig(NamedTuple):
     # that will be used to download the given x/y/z tile and serve it to your
     # application.
     dynUrl: Optional[str] = None
-    customConfig: Optional[Dict[str, Any]] = None
+    customConfig: Optional[Any] = None
 
 
 class BaseDownloadProvider(ABC):

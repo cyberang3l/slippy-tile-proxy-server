@@ -4,6 +4,8 @@ import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Tuple
 
+from geonorge_provider import (GeonorgeCustomConfig, GeonorgeDatasetID,
+                               GeonorgeWMSDownloadProvider)
 from providers import (BaseTileServerConfig, BaseTileSetConfig, ImageFileType,
                        MainConfig)
 
@@ -50,6 +52,8 @@ from providers import (BaseTileServerConfig, BaseTileSetConfig, ImageFileType,
 # http://localhost:8080/norway_vfr/11/1066/566
 # http://localhost:8080/norway_base_throttled/13/4288/2300
 # http://localhost:8080/norway_overlay_throttled/13/4288/2300
+# http://localhost:8080/norway_base_throttled/14/8576/4600
+# http://localhost:8080/norway_overlay_throttled/14/8576/4600
 
 mainConf = MainConfig(
     opentopomap=BaseTileSetConfig(
@@ -125,6 +129,192 @@ def dynGetTileUrl(z, x, y):
     return url + urllib.parse.urlencode(params)
 """,
                 ],
+            ),
+        ],
+    ),
+    norway_base_throttled=BaseTileSetConfig(
+        downloader=GeonorgeWMSDownloadProvider(),
+        tileServers=[
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA_GRAY,
+                    tileLayerName="Hoydelag"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA_GRAY,
+                    tileLayerName="Arealdekkeflate"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA_GRAY,
+                    tileLayerName="Vannflate"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_FJELLSKYGGE,
+                    tileLayerName="fjellskygge"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_elver"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_verneomradegrense"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA_GRAY,
+                    tileLayerName="Hoydekurver"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_vannkontur"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA_GRAY,
+                    tileLayerName="Vannkontur"
+                ),
+                servers=[],
+            ),
+        ],
+    ),
+    norway_overlay_throttled=BaseTileSetConfig(
+        downloader=GeonorgeWMSDownloadProvider(),
+        tileServers=[
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_jernbane"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_veger"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_ferger"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_anleggslinjer"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_tettsted"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_jernbanestasjon"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_bygninger"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_bygningspunkt"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_arealdekkepunkt"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_turisthytte"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_hoydepunkt"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_vegnavn"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 14,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_stedsnavn"
+                ),
+                servers=[],
             ),
         ],
     ),
