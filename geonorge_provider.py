@@ -13,6 +13,7 @@ import wand
 from wand.exceptions import OptionError
 from wand.image import Image
 
+from filelock import FileLock
 from providers import (BaseDownloadProvider, BaseTileServerConfig,
                        BaseTileSetConfig, bcolors, buildCompositeImage,
                        printColor)
@@ -165,13 +166,18 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
             tileServerConf: BaseTileServerConfig) -> Image:
 
         with _downloadLock:
-            cachedImage, cachePath = self.getTileLayerFromCache(
-                z, x, y, mapId, tileConf, tileServerConf)
-            if cachedImage:
-                printColor(
-                    f"Loading tile layer from cache: {cachePath}",
-                    color=bcolors.WHITE)
-                return cachedImage
+            try:
+                cachedImage, cachePath = self.getTileLayerFromCache(
+                    z, x, y, mapId, tileConf, tileServerConf)
+                if cachedImage:
+                    printColor(
+                        f"Loading tile layer from cache: {cachePath}",
+                        color=bcolors.WHITE)
+                    return cachedImage
+            except wand.exceptions.WandRuntimeError:
+                pass
+            except wand.exceptions.CorruptImageError:
+                pass
 
             dataset = tileServerConf.customConfig.wmsDataset
             layer = tileServerConf.customConfig.tileLayerName
@@ -312,36 +318,82 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
     def downloadTile(self, z: int, x: int, y: int,
                      mapId: str,
                      tileConf: 'BaseTileSetConfig') -> Image:
-        tile, tileCachePath = self._getTileCompositeFromCache(
-            z, x, y, mapId, tileConf)
-        if tile:
-            printColor(
-                f"Tile fetched from cache: {tileCachePath}",
-                color=bcolors.GREEN)
+
+        def tryCompositeCache():
+            tile, tileCachePath = self._getTileCompositeFromCache(
+                z, x, y, mapId, tileConf)
+            if tile:
+                printColor(
+                    f"Tile fetched from cache: {tileCachePath}",
+                    color=bcolors.GREEN)
             return tile
 
-        sizePx = 0
-        dpi = 0
-        for layerIdx, tileServerConf in enumerate(tileConf.tileServers):
-            if layerIdx == 0:
-                dpi = tileServerConf.customConfig.dpi
-                sizePx = tileServerConf.customConfig.sizePx
-            else:
-                layerName = tileServerConf.customConfig.tileLayerName
-                layerDpi = tileServerConf.customConfig.dpi
-                layerSize = tileServerConf.customConfig.sizePx
-                if layerDpi != dpi or layerSize != sizePx:
-                    raise BaseException(
-                        f"Layer {layerName} has a different dpi/sizePx ({layerDpi}/{layerSize}) from the previous layers ({dpi}/{sizePx})")
+        # Requests are processed concurrently by the threaded HTTP server.
+        # Try to fetch a composite tile if it exists in the cache right away
+        # before applying any locking.
+        tile = tryCompositeCache()
+        if tile:
+            return tile
 
-        downloadedLayers = []
-        for tileServerConf in tileConf.tileServers:
-            layer = self._getLayerFromGeonorge(
-                z, x, y, mapId, tileConf, tileServerConf)
-            downloadedLayers.append(layer)
+        # If the composite tile was not found in the cache, make sure that
+        # we download large tiles layers only once by using a FileLock for
+        # a specific working namespace. This is needed as, for example, the
+        # following two requests:
+        # /norway_base_throttled/12/2192/1070
+        # /norway_base_throttled/12/2193/1070
+        #
+        # will both be cropped from the WMS tiles:
+        # WMS_LAYER/12/2192/1064_8x8_512px_base_192dpi_4096x4096px.png
+        #
+        # So the common working namespace for these two requests is:
+        # 12_2192_1064_8x8_512px_base_192dpi_4096x4096px.png
+        workNs = self.getTileLayerCachePath(
+            z, x, y, mapId, tileConf, tileConf.tileServers[0]).split(os.sep)[-3:]
+        nsFlock = os.path.join(
+            self._tileCacheBasePath,
+            mapId,
+            f"{workNs[0]}_{workNs[1]}_{workNs[2]}.lock")
+        # Use a file lock to prevent multiple downloads of large tile layers
+        # by different concurrent requests.
+        # The first request that will acquire the file lock will download
+        # the WMS layers and prepare the composite, do the cropping and caching,
+        # and any subsequent request in that shares the same working namespace
+        # and acquires the filelock will fetch the tiles from the cache.
+        with FileLock(nsFlock, warnAfterSec=120):
+            printColor(
+                f"File lock {nsFlock} acquired by request {mapId}/{z}/{x}/{y}",
+                color=bcolors.BROWN)
+            # First thing when entering the critical section protected by the lock
+            # is to try to fetch the tiles again from the cache. The majority of
+            # the requests (63/64) will hit the cache here, as only the first request
+            # for a given working namespace will download and prepare the composite
+            # tiles.
+            tile = tryCompositeCache()
+            if tile:
+                return tile
 
-        compositeTile = self._makeCompositeFromLayers(downloadedLayers)
+            sizePx = 0
+            dpi = 0
+            for layerIdx, tileServerConf in enumerate(tileConf.tileServers):
+                if layerIdx == 0:
+                    dpi = tileServerConf.customConfig.dpi
+                    sizePx = tileServerConf.customConfig.sizePx
+                else:
+                    layerName = tileServerConf.customConfig.tileLayerName
+                    layerDpi = tileServerConf.customConfig.dpi
+                    layerSize = tileServerConf.customConfig.sizePx
+                    if layerDpi != dpi or layerSize != sizePx:
+                        raise BaseException(
+                            f"Layer {layerName} has a different dpi/sizePx ({layerDpi}/{layerSize}) from the previous layers ({dpi}/{sizePx})")
 
-        tile = self._cropLargeCompositeAndCacheIt(
-            compositeTile, sizePx, z, x, y, mapId, tileConf)
-        return tile
+            downloadedLayers = []
+            for tileServerConf in tileConf.tileServers:
+                layer = self._getLayerFromGeonorge(
+                    z, x, y, mapId, tileConf, tileServerConf)
+                downloadedLayers.append(layer)
+
+            compositeTile = self._makeCompositeFromLayers(downloadedLayers)
+
+            tile = self._cropLargeCompositeAndCacheIt(
+                compositeTile, sizePx, z, x, y, mapId, tileConf)
+            return tile
