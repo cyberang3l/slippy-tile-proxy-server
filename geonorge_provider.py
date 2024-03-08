@@ -13,12 +13,11 @@ import wand
 from wand.exceptions import OptionError
 from wand.image import Image
 
-from filelock import FileLock
+from nslock import NamespaceLock
 from providers import (BaseDownloadProvider, BaseTileServerConfig,
                        BaseTileSetConfig, bcolors, buildCompositeImage,
                        printColor)
 
-_downloadLock = Lock()
 _cacheLock = Lock()
 
 
@@ -145,7 +144,9 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
                 # This error checking chunk is specific to the geonorge WMS server
                 # that throttles requests aggressively, but returns a 200
                 # response.
-                printColor("Error occured:", e, color=bcolors.RED)
+                printColor("Error occured for downloaded image:",
+                           e.args, e.wand_error_code,
+                           color=bcolors.RED)
                 msg = data.decode('ISO-8859-1')
                 if "Overforbruk" in msg:
                     printColor(
@@ -165,66 +166,68 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
             tileConf: 'BaseTileSetConfig',
             tileServerConf: BaseTileServerConfig) -> Image:
 
-        with _downloadLock:
-            try:
-                cachedImage, cachePath = self.getTileLayerFromCache(
-                    z, x, y, mapId, tileConf, tileServerConf)
-                if cachedImage:
-                    printColor(
-                        f"Loading tile layer from cache: {cachePath}",
-                        color=bcolors.WHITE)
-                    return cachedImage
-            except wand.exceptions.WandRuntimeError:
-                pass
-            except wand.exceptions.CorruptImageError:
-                pass
+        # If additional locking for the download threads is needed, add a
+        # global "with downloadLock" here:
+        # with downloadLock:
+        try:
+            cachedImage, cachePath = self.getTileLayerFromCache(
+                z, x, y, mapId, tileConf, tileServerConf)
+            if cachedImage:
+                printColor(
+                    f"Loading tile layer from cache: {cachePath}",
+                    color=bcolors.WHITE)
+                return cachedImage
+        except wand.exceptions.WandRuntimeError:
+            pass
+        except wand.exceptions.CorruptImageError:
+            pass
 
-            dataset = tileServerConf.customConfig.wmsDataset
-            layer = tileServerConf.customConfig.tileLayerName
-            dpi = tileServerConf.customConfig.dpi
-            sizePx = tileServerConf.customConfig.sizePx
-            url = dataset.value
+        dataset = tileServerConf.customConfig.wmsDataset
+        layer = tileServerConf.customConfig.tileLayerName
+        dpi = tileServerConf.customConfig.dpi
+        sizePx = tileServerConf.customConfig.sizePx
+        url = dataset.value
 
-            x, y, x2, y2, width, height, tilesToRequest = self._getXYWH(
-                z, x, y, sizePx)
+        x, y, x2, y2, width, height, tilesToRequest = self._getXYWH(
+            z, x, y, sizePx)
 
-            transformer = pyproj.Transformer.from_crs("WGS84", "EPSG:3857")
-            bbox1 = mercantile.bounds(x, y, z)
-            bbox2 = mercantile.bounds(x2, y2, z)
-            south, west, north, east = transformer.transform_bounds(
-                bbox2.south, bbox1.west, bbox1.north, bbox2.east)
+        transformer = pyproj.Transformer.from_crs("WGS84", "EPSG:3857")
+        bbox1 = mercantile.bounds(x, y, z)
+        bbox2 = mercantile.bounds(x2, y2, z)
+        south, west, north, east = transformer.transform_bounds(
+            bbox2.south, bbox1.west, bbox1.north, bbox2.east)
 
-            params = {
-                "SERVICE": "WMS",
-                "VERSION": "1.3.0",
-                "REQUEST": "GetMap",
-                "BBOX": "{},{},{},{}".format(south, west, north, east),
-                "CRS": "EPSG:3857",
-                "WIDTH": width,
-                "HEIGHT": height,
-                "LAYERS": layer,
-                "FORMAT": "image/png",
-                "DPI": dpi,
-                "MAP_RESOLUTION": dpi,
-                "STYLE": "default",
-                "TRANSPARENT": "true"
-            }
+        params = {
+            "SERVICE": "WMS",
+            "VERSION": "1.3.0",
+            "REQUEST": "GetMap",
+            "BBOX": "{},{},{},{}".format(south, west, north, east),
+            "CRS": "EPSG:3857",
+            "WIDTH": width,
+            "HEIGHT": height,
+            "LAYERS": layer,
+            "FORMAT": "image/png",
+            "DPI": dpi,
+            "MAP_RESOLUTION": dpi,
+            "STYLE": "default",
+            "TRANSPARENT": "true"
+        }
 
-            image = self._downloadSingleTileLayer(
-                url + urllib.parse.urlencode(params))
+        image = self._downloadSingleTileLayer(
+            url + urllib.parse.urlencode(params))
 
-            if tileServerConf.enableTileCache:
-                # Cache the downloaded file if the cache for this layer is
-                # enabled
-                cachePath = self.getTileLayerCachePath(
-                    z, x, y, mapId, tileConf, tileServerConf)
-                print(
-                    f"Saving tile layer in cache: {cachePath}",
-                    file=sys.stderr)
-                with _cacheLock:
-                    image.save(filename=cachePath)
+        if tileServerConf.enableTileCache:
+            # Cache the downloaded file if the cache for this layer is
+            # enabled
+            cachePath = self.getTileLayerCachePath(
+                z, x, y, mapId, tileConf, tileServerConf)
+            print(
+                f"Saving tile layer in cache: {cachePath}",
+                file=sys.stderr)
+            with _cacheLock:
+                image.save(filename=cachePath)
 
-            return image
+        return image
 
     def _makeCompositeFromLayers(self, layers: List[Image]) -> Image:
         base = layers[0]
@@ -336,9 +339,8 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
             return tile
 
         # If the composite tile was not found in the cache, make sure that
-        # we download large tiles layers only once by using a FileLock for
-        # a specific working namespace. This is needed as, for example, the
-        # following two requests:
+        # we download large tiles layers only once by using a namespaced lock.
+        # This is needed as, for example, the following two requests:
         # /norway_base_throttled/12/2192/1070
         # /norway_base_throttled/12/2193/1070
         #
@@ -347,27 +349,27 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
         #
         # So the common working namespace for these two requests is:
         # 12_2192_1064_8x8_512px_base_192dpi_4096x4096px.png
-        workNs = self.getTileLayerCachePath(
+        baseNs = self.getTileLayerCachePath(
             z, x, y, mapId, tileConf, tileConf.tileServers[0]).split(os.sep)[-3:]
-        nsFlock = os.path.join(
+        ns = os.path.join(
             self._tileCacheBasePath,
             mapId,
-            f"{workNs[0]}_{workNs[1]}_{workNs[2]}.lock")
-        # Use a file lock to prevent multiple downloads of large tile layers
+            f"{baseNs[0]}_{baseNs[1]}_{baseNs[2]}.lock")
+
+        # Use a namespace lock to prevent multiple downloads of large tile layers
         # by different concurrent requests.
-        # The first request that will acquire the file lock will download
-        # the WMS layers and prepare the composite, do the cropping and caching,
-        # and any subsequent request in that shares the same working namespace
-        # and acquires the filelock will fetch the tiles from the cache.
-        with FileLock(nsFlock, warnAfterSec=120):
+        # The first request for a given namespace that will acquire the namespace
+        # lock will download the WMS layers and prepare the composite, do the
+        # cropping and caching, and any subsequent request that shares the same
+        # namespace will fetch the tiles from the cache.
+        with NamespaceLock(ns):
             printColor(
-                f"File lock {nsFlock} acquired by request {mapId}/{z}/{x}/{y}",
+                f"Namespace lock {ns} acquired by request {mapId}/{z}/{x}/{y}",
                 color=bcolors.BROWN)
             # First thing when entering the critical section protected by the lock
             # is to try to fetch the tiles again from the cache. The majority of
-            # the requests (63/64) will hit the cache here, as only the first request
-            # for a given working namespace will download and prepare the composite
-            # tiles.
+            # the requests (technically any request, except the first one that shares
+            # the namespace lock) will hit the cache here.
             tile = tryCompositeCache()
             if tile:
                 return tile

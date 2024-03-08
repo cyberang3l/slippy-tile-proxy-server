@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import traceback
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Tuple
 
@@ -373,8 +374,8 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             printColor(
                 "Broken pipe - won't respond to the client",
                 color=bcolors.RED)
-        except BaseException as e:
-            printColor("Error occured:", e, color=bcolors.RED)
+        except BaseException:
+            printColor(traceback.format_exc(), color=bcolors.RED)
             self.send_error(408)
 
 
