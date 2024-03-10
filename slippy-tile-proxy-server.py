@@ -136,7 +136,7 @@ def dynGetTileUrl(z, x, y):
         downloader=GeonorgeWMSDownloadProvider(),
         tileServers=[
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA_GRAY,
                     tileLayerName="Hoydelag"
@@ -144,7 +144,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA_GRAY,
                     tileLayerName="Arealdekkeflate"
@@ -152,7 +152,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA_GRAY,
                     tileLayerName="Vannflate"
@@ -160,7 +160,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_FJELLSKYGGE,
                     tileLayerName="fjellskygge"
@@ -168,7 +168,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
                     tileLayerName="kd_elver"
@@ -176,7 +176,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
                     tileLayerName="kd_verneomradegrense"
@@ -184,7 +184,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA_GRAY,
                     tileLayerName="Hoydekurver"
@@ -192,7 +192,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
                     tileLayerName="kd_vannkontur"
@@ -200,7 +200,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA_GRAY,
                     tileLayerName="Vannkontur"
@@ -213,7 +213,7 @@ def dynGetTileUrl(z, x, y):
         downloader=GeonorgeWMSDownloadProvider(),
         tileServers=[
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
                     tileLayerName="kd_jernbane"
@@ -221,7 +221,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
                     tileLayerName="kd_veger"
@@ -229,7 +229,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
                     tileLayerName="kd_ferger"
@@ -237,7 +237,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
                     tileLayerName="kd_anleggslinjer"
@@ -245,7 +245,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
                     tileLayerName="kd_tettsted"
@@ -253,7 +253,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
                     tileLayerName="kd_jernbanestasjon"
@@ -261,7 +261,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
                     tileLayerName="kd_bygninger"
@@ -269,7 +269,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
                     tileLayerName="kd_bygningspunkt"
@@ -277,7 +277,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
                     tileLayerName="kd_arealdekkepunkt"
@@ -285,7 +285,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
                     tileLayerName="kd_turisthytte"
@@ -293,7 +293,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
                     tileLayerName="kd_hoydepunkt"
@@ -301,7 +301,7 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
                     tileLayerName="kd_vegnavn"
@@ -309,10 +309,87 @@ def dynGetTileUrl(z, x, y):
                 servers=[],
             ),
             BaseTileServerConfig(
-                tileCacheTimeoutSec=86400 * 14,
+                tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
                     wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
                     tileLayerName="kd_stedsnavn"
+                ),
+                servers=[],
+            ),
+        ],
+    ),
+    norway_base_colored=BaseTileSetConfig(
+        downloader=GeonorgeWMSDownloadProvider(),
+        tileServers=[
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 28,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_hoydelag"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 28,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_arealdekkeflate"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 28,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_vannflate"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 28,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_FJELLSKYGGE,
+                    tileLayerName="fjellskygge"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 28,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_elver"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 28,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_verneomradegrense"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 28,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA_GRAY,
+                    tileLayerName="Hoydekurver"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 28,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_vannkontur"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 28,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA_GRAY,
+                    tileLayerName="Vannkontur"
                 ),
                 servers=[],
             ),
