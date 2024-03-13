@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import traceback
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Tuple
@@ -397,8 +398,8 @@ def dynGetTileUrl(z, x, y):
     ),
 )
 
-hostName = "localhost"
-serverPort = 8080
+hostName = os.environ.get("VIRTUAL_HOST", "0.0.0.0")
+serverPort = int(os.environ.get("VIRTUAL_PORT", 8080))
 
 
 class HttpRequestHandler(BaseHTTPRequestHandler):
