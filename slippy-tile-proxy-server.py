@@ -398,8 +398,8 @@ def dynGetTileUrl(z, x, y):
     ),
 )
 
-hostName = os.environ.get("VIRTUAL_HOST", "0.0.0.0")
-serverPort = int(os.environ.get("VIRTUAL_PORT", 8080))
+hostName = os.environ.get("BIND_ADDR", "0.0.0.0")
+serverPort = int(os.environ.get("BIND_PORT", 8080))
 
 
 class HttpRequestHandler(BaseHTTPRequestHandler):
