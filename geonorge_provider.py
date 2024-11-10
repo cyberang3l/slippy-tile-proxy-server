@@ -45,7 +45,7 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
     This approach has several benefits:
     1. We reduce the number of requests towards the WMS dramatically and we
        are not getting throttled often, but we still download large layers that
-       can server 64 tiles per request. In fact, the thread that downloads
+       can serve 64 tiles per request. In fact, the thread that downloads
        the layers has a thread lock (so only one concurrent request is allowed
        to the server), and I don't see the dreaded "overuse - wait a little"
        message anymore.
@@ -55,7 +55,7 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
        configurations.
     3. Small tiles that have been cropped are cached and associated with
        individual map configs. If we request them again, they are served
-       immediately. No need to read a bunch of large layers and re-generated
+       immediately. No need to read a bunch of large layers and re-generate
        the composites
     """
 
