@@ -57,6 +57,16 @@ from providers import (BaseTileServerConfig, BaseTileSetConfig, ImageFileType,
 # http://localhost:8080/norway_overlay_throttled/14/8576/4600
 
 mainConf = MainConfig(
+    ktimatologio=BaseTileSetConfig(
+        tileServers=[
+            BaseTileServerConfig(
+                servers=[
+                    "tiles-eu1.arcgis.com",
+                ],
+                urlFmt="40tFGWzosjaLJpmn/arcgis/rest/services/Greece_Basemap_v2/MapServer/tile/{z}/{y}/{x}",
+            ),
+        ],
+    ),
     opentopomap=BaseTileSetConfig(
         tileServers=[
             BaseTileServerConfig(
