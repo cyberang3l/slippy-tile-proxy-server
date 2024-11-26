@@ -8,8 +8,16 @@ from abc import ABC, abstractmethod
 from enum import Enum
 from pathlib import Path
 from random import randint
-from typing import (Any, Dict, List, NamedTuple, Optional, Tuple, Union,
-                    overload)
+from typing import (
+    Any,
+    Dict,
+    List,
+    NamedTuple,
+    Optional,
+    Tuple,
+    Union,
+    overload
+)
 
 import wand
 from wand.image import Image

@@ -5,10 +5,19 @@ import traceback
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Tuple
 
-from geonorge_provider import (GeonorgeCustomConfig, GeonorgeDatasetID,
-                               GeonorgeWMSDownloadProvider)
-from providers import (BaseTileServerConfig, BaseTileSetConfig, ImageFileType,
-                       MainConfig, bcolors, printColor)
+from geonorge_provider import (
+    GeonorgeCustomConfig,
+    GeonorgeDatasetID,
+    GeonorgeWMSDownloadProvider
+)
+from providers import (
+    BaseTileServerConfig,
+    BaseTileSetConfig,
+    ImageFileType,
+    MainConfig,
+    bcolors,
+    printColor
+)
 
 # A brief explanation of the map configuration format of the tile proxy
 # server follows.

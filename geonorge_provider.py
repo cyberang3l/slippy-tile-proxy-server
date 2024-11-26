@@ -5,7 +5,12 @@ import sys
 import time
 import urllib
 from threading import Lock
-from typing import List, NamedTuple, Optional, Tuple
+from typing import (
+    List,
+    NamedTuple,
+    Optional,
+    Tuple
+)
 
 import mercantile
 import pyproj
@@ -14,9 +19,14 @@ from wand.exceptions import OptionError
 from wand.image import Image
 
 from nslock import NamespaceLock
-from providers import (BaseDownloadProvider, BaseTileServerConfig,
-                       BaseTileSetConfig, bcolors, buildCompositeImage,
-                       printColor)
+from providers import (
+    BaseDownloadProvider,
+    BaseTileServerConfig,
+    BaseTileSetConfig,
+    bcolors,
+    buildCompositeImage,
+    printColor
+)
 
 _cacheLock = Lock()
 
