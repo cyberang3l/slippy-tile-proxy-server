@@ -233,7 +233,6 @@ class MultithreadedDownloadProvider(BaseDownloadProvider):
             req = urllib.request.Request(url)
             if headers is not None:
                 for k, v in headers.items():
-                    print(f"adding header: {k}: {v}")
                     req.add_header(k, v)
 
             with urllib.request.urlopen(req, timeout=self._downloadTimeoutSec) as conn:
