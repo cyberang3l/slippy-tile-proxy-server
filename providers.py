@@ -81,6 +81,10 @@ class ImageFileType(str, Enum):
     AUTO = "auto"
 
 
+Key = str
+Value = str
+
+
 class BaseTileServerConfig(NamedTuple):
     # A list of servers that we will alternate when downloading tiles
     servers: List[str]
@@ -90,6 +94,8 @@ class BaseTileServerConfig(NamedTuple):
     protocol: TileServerProtocol = TileServerProtocol.HTTPS
     enableTileCache: bool = True
     tileCacheTimeoutSec: int = 172800
+    # Optional url request headers to use for each request to the tile servers
+    headers: Optional[Dict[Key, Value]] = None
     # If the server you want to download tiles from doesn't speak the slippy
     # map format (x/y/z) but you know how to write a function to translate
     # x/y/z to whatever the remote server can understand, then you can set
@@ -215,16 +221,22 @@ class MultithreadedDownloadProvider(BaseDownloadProvider):
         return tileServerConf.protocol.value + "://" + tileServerConf.servers[
             serverIdx] + "/" + tileServerConf.urlFmt.format(z=z, x=x, y=y)
 
-    def _downloadTileLayers(self, urls: Dict[int, str]) -> Dict[
+    def _downloadTileLayers(self, urls: Dict[int, str], headers: Dict[int, Optional[Dict[Key, Value]]]) -> Dict[
             int, Dict[str, Union[str, Image]]]:
         # Downloads tiles in parallel threads, and returns the download result in
         # a dict where the key is an integer. The key indicates the layering order
         # when making image composites later on, whereas the result with key 0 is
         # the base image, and any subsequent image is an overlay image
 
-        def downloadSingleTileLayer(url: str):
+        def downloadSingleTileLayer(url: str, headers: Optional[Dict[Key, Value]]):
             # Downloads a tile from the url and returns the received bytes
-            with urllib.request.urlopen(url, timeout=self._downloadTimeoutSec) as conn:
+            req = urllib.request.Request(url)
+            if headers is not None:
+                for k, v in headers.items():
+                    print(f"adding header: {k}: {v}")
+                    req.add_header(k, v)
+
+            with urllib.request.urlopen(req, timeout=self._downloadTimeoutSec) as conn:
                 return conn.read()
 
         images = {}
@@ -233,7 +245,7 @@ class MultithreadedDownloadProvider(BaseDownloadProvider):
             futureToUrl = {
                 executor.submit(
                     downloadSingleTileLayer,
-                    url): (url, urlIdx) for urlIdx, url in urls.items()}
+                    url=url, headers=headers[urlIdx]): (url, urlIdx) for urlIdx, url in urls.items()}
 
             for future in concurrent.futures.as_completed(futureToUrl):
                 url, urlIdx = futureToUrl[future]
@@ -287,7 +299,8 @@ class MultithreadedDownloadProvider(BaseDownloadProvider):
                      tileConf: 'BaseTileSetConfig') -> Image:
         cachedLayers = self._loadLayersFromCache(z, x, y, mapId, tileConf)
 
-        urls = {}
+        urls: Dict[int, str] = {}
+        headers: Dict[int, Optional[Dict[Key, Value]]] = {}
         for layerIdx, tileServerConf in enumerate(tileConf.tileServers):
             if layerIdx in cachedLayers.keys():
                 # Picked this layer from the cache - no need to download
@@ -296,8 +309,9 @@ class MultithreadedDownloadProvider(BaseDownloadProvider):
             url = self._getTileUrlFromServerConf(
                 z, x, y, mapId, tileConf, tileServerConf)
             urls[layerIdx] = url
+            headers[layerIdx] = tileServerConf.headers
 
-        downloadedLayers = self._downloadTileLayers(urls)
+        downloadedLayers = self._downloadTileLayers(urls, headers)
         for layerIdx, layer in downloadedLayers.items():
             tileServerConf = tileConf.tileServers[layerIdx]
             if tileServerConf.enableTileCache:
@@ -320,7 +334,7 @@ class MultithreadedDownloadProvider(BaseDownloadProvider):
 class BaseTileSetConfig(NamedTuple):
     tileServers: List[BaseTileServerConfig]
     filetype: ImageFileType = ImageFileType.AUTO
-    downloader: MultithreadedDownloadProvider = MultithreadedDownloadProvider()
+    downloader: BaseDownloadProvider = MultithreadedDownloadProvider()
 
 
 class MainConfig(dict):

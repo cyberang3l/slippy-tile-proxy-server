@@ -70,9 +70,23 @@ mainConf = MainConfig(
         tileServers=[
             BaseTileServerConfig(
                 servers=[
-                    "tiles-eu1.arcgis.com",
+                    "server.arcgisonline.com",
+                    "services.arcgisonline.com",
                 ],
-                urlFmt="40tFGWzosjaLJpmn/arcgis/rest/services/Greece_Basemap_v2/MapServer/tile/{z}/{y}/{x}",
+                urlFmt="ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                headers={
+                    'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:132.0) Gecko/20100101 Firefox/132.0',
+                    'Accept': '*/*',
+                    'Referer': 'https://maps.ktimatologio.gr/',
+                    'Origin': 'https://maps.ktimatologio.gr',
+                    'DNT': '1',
+                    'Sec-Fetch-Dest': 'empty',
+                    'Sec-Fetch-Mode': 'cors',
+                    'Sec-Fetch-Site': 'cross-site',
+                    'Connection': 'keep-alive',
+                    'Accept-Encoding': 'gzip, deflate, br, zstd',
+                    'TE': 'trailers',
+                }
             ),
         ],
     ),
