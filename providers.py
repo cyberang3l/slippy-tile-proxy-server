@@ -135,10 +135,17 @@ class BaseDownloadProvider(ABC):
             lastModTime = os.path.getmtime(path)
             if time.time() - lastModTime > tileServerConf.tileCacheTimeoutSec:
                 printColor(
-                    f"Cache expired for layer {path}",
+                    f"Cache expired for tile {path}",
                     color=bcolors.YELLOW)
                 return None, None
         except FileNotFoundError:
+            return None, None
+
+        st = os.stat(path)
+        if st.st_rsize == 0:
+            printColor(
+                f"Zero bytes file in cache ignored: {path} - may be corrupted",
+                color=bcolors.YELLOW)
             return None, None
 
         try:
