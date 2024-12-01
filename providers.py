@@ -142,7 +142,7 @@ class BaseDownloadProvider(ABC):
             return None, None
 
         st = os.stat(path)
-        if st.st_rsize == 0:
+        if st.st_size == 0:
             printColor(
                 f"Zero bytes file in cache ignored: {path} - may be corrupted",
                 color=bcolors.YELLOW)
