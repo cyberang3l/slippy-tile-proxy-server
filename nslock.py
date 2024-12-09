@@ -1,10 +1,30 @@
 import traceback
+from copy import deepcopy
 from threading import Lock
-from typing import Dict
+from typing import Dict, Union
 
 _namespaceLock = Lock()
 _namespace: Dict[str, Lock] = {}
 _lockCounter: Dict[str, int] = {}
+
+
+def getListOfActiveLocks(return_str: bool = False, sorted_by_refcount: bool = False) -> Union[Dict[str, int], str]:
+    locks = {}
+    with _namespaceLock:
+        if not sorted_by_refcount:
+            locks = deepcopy(_lockCounter)
+        else:
+            locks = {
+                ns: refcount for ns, refcount in reversed(sorted(_lockCounter.items(), key=lambda item: item[1]))
+            }
+
+    if return_str:
+        ret_str = "[\n  "
+        ret_str += "\n  ".join([f"{k} (refcount {v})" for k, v in locks.items()])
+        ret_str += "\n]"
+        return ret_str
+
+    return locks
 
 
 class NamespaceLock:

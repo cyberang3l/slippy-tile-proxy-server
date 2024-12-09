@@ -8,11 +8,15 @@ fi
 
 HOST_BIND_PORT=8080
 CONTAINER_BIND_PORT=8080
-WAND_MEMORY_LIMIT=2GiB
+# Use a large WAND_MEMORY_LIMIT if you plan to use the
+# geonorge provider. 8GB is the minimum recommended value
+# to prevent running out of memory when QGIS (or other
+# aggressive programs) send an excessive number of requests
+WAND_MEMORY_LIMIT=${WAND_MEMORY_LIMIT:-8GiB}
 
 docker stop slippy-tile-proxy 2>/dev/null >/dev/null || true
 docker build --target prog_runtime \
-	--build-arg WAND_MEMORY_LIMIT=${WAND_MEMORY_LIMIT} \
+	--build-arg WAND_MEMORY_LIMIT="${WAND_MEMORY_LIMIT}" \
 	--tag slippy-tile-proxy .
 docker run --name slippy-tile-proxy \
 	${detach} \

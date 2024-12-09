@@ -10,6 +10,7 @@ from geonorge_provider import (
     GeonorgeDatasetID,
     GeonorgeWMSDownloadProvider
 )
+from nslock import getListOfActiveLocks
 from providers import (
     BaseTileServerConfig,
     BaseTileSetConfig,
@@ -461,6 +462,12 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             color=bcolors.PURPLE)
         if self.path == "/favicon.ico":
             self.wfile.write(b'')
+            return
+        elif self.path == "/locks":
+            self.wfile.write(getListOfActiveLocks(return_str=True, sorted_by_refcount=False).encode())
+            return
+        elif self.path == "/locks-sorted":
+            self.wfile.write(getListOfActiveLocks(return_str=True, sorted_by_refcount=True).encode())
             return
 
         try:

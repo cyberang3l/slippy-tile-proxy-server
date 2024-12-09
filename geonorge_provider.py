@@ -4,7 +4,6 @@ import os
 import sys
 import time
 import urllib
-from threading import Lock
 from typing import (
     List,
     NamedTuple,
@@ -18,7 +17,7 @@ import wand
 from wand.exceptions import OptionError
 from wand.image import Image
 
-from nslock import NamespaceLock
+from nslock import NamespaceLock, getListOfActiveLocks
 from providers import (
     BaseDownloadProvider,
     BaseTileServerConfig,
@@ -27,8 +26,6 @@ from providers import (
     buildCompositeImage,
     printColor
 )
-
-_cacheLock = Lock()
 
 
 class GeonorgeDatasetID(str, enum.Enum):
@@ -234,7 +231,7 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
             print(
                 f"Saving tile layer in cache: {cachePath}",
                 file=sys.stderr)
-            with _cacheLock:
+            with NamespaceLock(cachePath):
                 image.save(filename=cachePath)
 
         return image
@@ -297,7 +294,7 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
             return None, None
 
         try:
-            with _cacheLock:
+            with NamespaceLock(path):
                 return Image(filename=path), path
         except wand.exceptions.BlobError:
             pass
@@ -322,7 +319,7 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
                 top = yi * sizePx
                 bottom = top + sizePx
                 with image[left:right, top:bottom] as crop:
-                    with _cacheLock:
+                    with NamespaceLock(cachePath):
                         crop.save(filename=cachePath)
                     if x == xReq and y == yReq:
                         retTile = crop[:]
@@ -364,7 +361,7 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
         ns = os.path.join(
             self._tileCacheBasePath,
             mapId,
-            f"{baseNs[0]}_{baseNs[1]}_{baseNs[2]}.lock")
+            f"{baseNs[0]}_{baseNs[1]}_{baseNs[2]}.largeLock")
 
         # Use a namespace lock to prevent multiple downloads of large tile layers
         # by different concurrent requests.
@@ -383,6 +380,29 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
             tile = tryCompositeCache()
             if tile:
                 return tile
+
+            def getLargeLockList() -> List[str]:
+                # Get a list of large locks from the namespace lock.
+                # Sort them by refcount (refcount points to how many
+                # requests are waiting for this lock to be released),
+                # to prioritize locks that will serve more tiles before
+                # (hopefully) timing out
+                return [lock for lock in getListOfActiveLocks(sorted_by_refcount=True).keys() if lock.endswith(".largeLock")]
+
+            # Do not process more than one large lock (downloading of
+            # massive tiles) simultaneously - we risk running out of
+            # memory and geonorge is terribly slow any way.
+            maxActiveLargeLocks = 1
+            largeLockList = getLargeLockList()
+            while len(largeLockList) > maxActiveLargeLocks:
+                if ns not in largeLockList[:maxActiveLargeLocks]:
+                    time.sleep(0.1)
+                    largeLockList = getLargeLockList()
+                else:
+                    # Process the lock if it's in the top of the sorted list by
+                    # lock refcount
+                    printColor(f"Will now process {ns}", bcolors.UNDERLINE)
+                    break
 
             sizePx = 0
             dpi = 0

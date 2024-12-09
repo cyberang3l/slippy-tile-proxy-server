@@ -22,6 +22,8 @@ from typing import (
 import wand
 from wand.image import Image
 
+from nslock import NamespaceLock
+
 _POSIX_PROG_NAME = "slippy-tile-proxy"
 
 
@@ -149,7 +151,8 @@ class BaseDownloadProvider(ABC):
             return None, None
 
         try:
-            return Image(filename=path), path
+            with NamespaceLock(path):
+                return Image(filename=path), path
         except wand.exceptions.BlobError:
             pass
         return None, None
@@ -328,7 +331,8 @@ class MultithreadedDownloadProvider(BaseDownloadProvider):
                 print(
                     f"Saving tile layer in cache: {cachePath}",
                     file=sys.stderr)
-                layer["image"].save(filename=cachePath)
+                with NamespaceLock(cachePath):
+                    layer["image"].save(filename=cachePath)
 
         allLayers = {**cachedLayers, **downloadedLayers}
         tile = self._makeCompositeFromLayers(
