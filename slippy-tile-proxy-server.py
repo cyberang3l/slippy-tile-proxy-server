@@ -462,12 +462,20 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             color=bcolors.PURPLE)
         if self.path == "/favicon.ico":
             self.wfile.write(b'')
+            self.send_response(200)
             return
         elif self.path == "/locks":
             self.wfile.write(getListOfActiveLocks(return_str=True, sorted_by_refcount=False).encode())
+            self.send_response(200)
             return
         elif self.path == "/locks-sorted":
             self.wfile.write(getListOfActiveLocks(return_str=True, sorted_by_refcount=True).encode())
+            self.send_response(200)
+            return
+        elif self.path == "/settings":
+            concurrentGeonorgeLargeDownloads = str(os.environ.get("CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS", 1))
+            self.wfile.write(f"CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS={concurrentGeonorgeLargeDownloads}")
+            self.send_response(200)
             return
 
         try:

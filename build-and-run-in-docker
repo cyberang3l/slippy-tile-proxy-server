@@ -13,6 +13,7 @@ CONTAINER_BIND_PORT=8080
 # to prevent running out of memory when QGIS (or other
 # aggressive programs) send an excessive number of requests
 WAND_MEMORY_LIMIT=${WAND_MEMORY_LIMIT:-8GiB}
+CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS=${CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS:-1}
 
 docker stop slippy-tile-proxy 2>/dev/null >/dev/null || true
 docker build --target prog_runtime \
@@ -23,4 +24,5 @@ docker run --name slippy-tile-proxy \
 	--rm \
 	--publish "${HOST_BIND_PORT}:${CONTAINER_BIND_PORT}/tcp" \
 	--env BIND_PORT="${CONTAINER_BIND_PORT}" \
+	--env CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS="${CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS}" \
 	slippy-tile-proxy

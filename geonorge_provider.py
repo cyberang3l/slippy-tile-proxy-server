@@ -67,6 +67,7 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
     """
 
     def __init__(self, downloadTimeoutSec: int = 20):
+        self._concurrentLargeTileDownloads = int(os.environ.get("CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS", 1))
         self._downloadTimeoutSec = downloadTimeoutSec
         super(GeonorgeWMSDownloadProvider, self).__init__()
 
@@ -392,7 +393,7 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
             # Do not process more than one large lock (downloading of
             # massive tiles) simultaneously - we risk running out of
             # memory and geonorge is terribly slow any way.
-            maxActiveLargeLocks = 1
+            maxActiveLargeLocks = self._concurrentLargeTileDownloads
             largeLockList = getLargeLockList()
             while len(largeLockList) > maxActiveLargeLocks:
                 if ns not in largeLockList[:maxActiveLargeLocks]:
