@@ -474,7 +474,7 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
             return
         elif self.path == "/settings":
             concurrentGeonorgeLargeDownloads = str(os.environ.get("CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS", 1))
-            self.wfile.write(f"CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS={concurrentGeonorgeLargeDownloads}")
+            self.wfile.write(f"CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS={concurrentGeonorgeLargeDownloads}".encode())
             self.send_response(200)
             return
 
