@@ -8,7 +8,8 @@ from typing import Tuple
 from geonorge_provider import (
     GeonorgeCustomConfig,
     GeonorgeDatasetID,
-    GeonorgeWMSDownloadProvider
+    GeonorgeWMSDownloadProvider,
+    default_CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS
 )
 from nslock import getListOfActiveLocks
 from providers import (
@@ -456,26 +457,49 @@ class HttpRequestHandler(BaseHTTPRequestHandler):
 
         return z, x, y, mapId, mapConf
 
+    def parseFirstLevelPaths(self, path: str) -> bool:
+        if path == "/favicon.ico":
+            self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+            self.wfile.write(b'')
+            return True
+        elif path == "/locks":
+            self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+            self.wfile.write(
+                getListOfActiveLocks(
+                    return_str=True,
+                    sorted_by_refcount=False).encode())
+            return True
+        elif path == "/locks-sorted":
+            self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+            self.wfile.write(
+                getListOfActiveLocks(
+                    return_str=True,
+                    sorted_by_refcount=True).encode())
+            return True
+        elif path == "/settings":
+            self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+
+            concurrentGeonorgeLargeDownloads = str(os.environ.get(
+                "CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS",
+                default_CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS))
+            self.wfile.write(f"CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS={concurrentGeonorgeLargeDownloads}".encode())
+            return True
+        # Request hasn't been served yet - return False
+        return False
+
     def do_GET(self):
         printColor(
             f" - Serving Incoming request {bcolors.BOLD}{self.path}",
             color=bcolors.PURPLE)
-        if self.path == "/favicon.ico":
-            self.wfile.write(b'')
-            self.send_response(200)
-            return
-        elif self.path == "/locks":
-            self.wfile.write(getListOfActiveLocks(return_str=True, sorted_by_refcount=False).encode())
-            self.send_response(200)
-            return
-        elif self.path == "/locks-sorted":
-            self.wfile.write(getListOfActiveLocks(return_str=True, sorted_by_refcount=True).encode())
-            self.send_response(200)
-            return
-        elif self.path == "/settings":
-            concurrentGeonorgeLargeDownloads = str(os.environ.get("CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS", 1))
-            self.wfile.write(f"CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS={concurrentGeonorgeLargeDownloads}".encode())
-            self.send_response(200)
+        if self.parseFirstLevelPaths(path=self.path):
             return
 
         try:

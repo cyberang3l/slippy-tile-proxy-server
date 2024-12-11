@@ -27,6 +27,8 @@ from providers import (
     printColor
 )
 
+default_CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS = 1
+
 
 class GeonorgeDatasetID(str, enum.Enum):
     WMS_KARTDATA = "https://openwms.statkart.no/skwms1/wms.kartdata?"
@@ -67,7 +69,10 @@ class GeonorgeWMSDownloadProvider(BaseDownloadProvider):
     """
 
     def __init__(self, downloadTimeoutSec: int = 20):
-        self._concurrentLargeTileDownloads = int(os.environ.get("CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS", 1))
+        self._concurrentLargeTileDownloads = int(
+            os.environ.get(
+                "CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS",
+                default_CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS))
         self._downloadTimeoutSec = downloadTimeoutSec
         super(GeonorgeWMSDownloadProvider, self).__init__()
 
