@@ -31,9 +31,9 @@ default_CONCURRENT_GEONORGE_LARGE_TILE_DOWNLOADS = 1
 
 
 class GeonorgeDatasetID(str, enum.Enum):
-    WMS_KARTDATA = "https://openwms.statkart.no/skwms1/wms.kartdata?"
-    WMS_KARTDATA_GRAY = "https://openwms.statkart.no/skwms1/wms.kartdata3graatone?"
-    WMS_FJELLSKYGGE = "https://openwms.statkart.no/skwms1/wms.fjellskygge?"
+    WMS_KARTDATA = "https://wms.geonorge.no/skwms1/wms.kartdata?"
+    WMS_KARTDATA_GRAY = "https://wms.geonorge.no/skwms1/wms.kartdata3graatone?"
+    WMS_FJELLSKYGGE = "https://wms.geonorge.no/skwms1/wms.fjellskygge?"
 
 
 class GeonorgeCustomConfig(NamedTuple):
