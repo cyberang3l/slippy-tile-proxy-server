@@ -5,7 +5,7 @@ import sys
 import time
 import urllib.request
 from abc import ABC, abstractmethod
-from enum import Enum
+from enum import Enum, StrEnum
 from pathlib import Path
 from random import randint
 from typing import (
@@ -27,7 +27,7 @@ from nslock import NamespaceLock
 _POSIX_PROG_NAME = "slippy-tile-proxy"
 
 
-class bcolors:
+class bcolors(StrEnum):
     PURPLE = '\033[95m'
     BLUE = '\033[94m'
     WHITE = '\033[97m'
