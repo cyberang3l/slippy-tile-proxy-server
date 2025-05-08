@@ -66,6 +66,7 @@ from providers import (
 # http://localhost:8080/norway_overlay_throttled/13/4288/2300
 # http://localhost:8080/norway_base_throttled/14/8576/4600
 # http://localhost:8080/norway_overlay_throttled/14/8576/4600
+# http://localhost:8080/norway_contours_only_throttled/11/1066/566
 
 mainConf = MainConfig(
     ktimatologio=BaseTileSetConfig(
@@ -203,6 +204,51 @@ def dynGetTileUrl(z, x, y):
                 ),
                 servers=[],
             ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 28,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_elver"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 28,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_verneomradegrense"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 28,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA_GRAY,
+                    tileLayerName="Hoydekurver"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 28,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA,
+                    tileLayerName="kd_vannkontur"
+                ),
+                servers=[],
+            ),
+            BaseTileServerConfig(
+                tileCacheTimeoutSec=86400 * 28,
+                customConfig=GeonorgeCustomConfig(
+                    wmsDataset=GeonorgeDatasetID.WMS_KARTDATA_GRAY,
+                    tileLayerName="Vannkontur"
+                ),
+                servers=[],
+            ),
+        ],
+    ),
+    norway_contours_only_throttled=BaseTileSetConfig(
+        downloader=GeonorgeWMSDownloadProvider(),
+        tileServers=[
             BaseTileServerConfig(
                 tileCacheTimeoutSec=86400 * 28,
                 customConfig=GeonorgeCustomConfig(
