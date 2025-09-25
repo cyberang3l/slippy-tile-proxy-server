@@ -6,7 +6,7 @@ RUN apt-get update -y && \
   apt-get -y --no-install-recommends install vim libmagickwand-dev && \
   rm -rf /var/lib/apt/lists/*
 
-RUN sed -i -e 's|\(resource.*memory.*value="\).*\(".*\)|\1'${WAND_MEMORY_LIMIT}'\2|g' /etc/ImageMagick-6/policy.xml
+RUN sed -i -e 's|\(resource.*memory.*value="\).*\(".*\)|\1'${WAND_MEMORY_LIMIT}'\2|g' /etc/ImageMagick-7/policy.xml
 
 WORKDIR /usr/src/app
 
